@@ -45,7 +45,6 @@ Coldcard, and not much else.
 ## Requirements
 
 - Linux or MacOS
-  - This has only been nominally tested on macOS so expect bugs
   - Support for Windows is planned, but I'll need someone with a Windows computer to
     help
 - Bitcoin Core 0.19+
@@ -53,6 +52,10 @@ Coldcard, and not much else.
 - Coldcard
 
 ![home](docs/img/splash.png)
+
+## macOS newbie-friendly install process
+
+Not super familiar with the commandline? On macOS? Check out the [easy setup tutorial here.](docs/install-macos.md)
 
 ## Install process
 
@@ -75,9 +78,12 @@ Coldcard, and not much else.
     - `gpg --keyserver keyserver.ubuntu.com --recv-keys 0x25F27A38A47AD566`
     - You can verify this fingerprint on my Twitter: https://twitter.com/jamesob
 1. Get the sigs for the release:
-    - Get the signature: `curl -O http://img.jameso.be/sigs/coldcore-$(./coldcore --version).asc`
-    - Verify the signature: `gpg coldcore-[version].asc`
-    - Ensure it matches: `sha256sum coldcore`
+    - Get the signature
+      - `curl -O http://img.jameso.be/sigs/coldcore-$(./coldcore --version | cut -d' ' -f2).asc`
+    - Verify the signature
+      - `gpg coldcore-[version].asc`
+    - Ensure it matches 
+      - `sha256sum coldcore`
 
 ## Experimenting with testnet
 

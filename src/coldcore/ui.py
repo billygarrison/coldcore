@@ -51,7 +51,8 @@ def open_file_browser():
         cmd = "xdg-open ."
     elif plat == "Darwin":
         cmd = "open ."
-    # TODO windows support
+    elif plat == "Windows":
+        cmd = "explorer ."
 
     subprocess.Popen(
         cmd,
@@ -439,7 +440,9 @@ def run_setup(config, controller) -> t.Tuple[t.Any, t.Any]:
     while not got_utxo:
         spin("waiting for transaction")
         utxos = controller.get_utxos(rpcw)
-        got_utxo = utxos.get(receive_addr1)
+        matching = [u for u in utxos.values() if u.address == receive_addr1]
+        if matching:
+            got_utxo = matching[0]
         time.sleep(1)
 
     p()
@@ -518,7 +521,9 @@ def run_setup(config, controller) -> t.Tuple[t.Any, t.Any]:
     while not inmempool:
         spin("waiting to see the transaction in the mempool")
         utxos = controller.get_utxos(rpcw)
-        got_utxo = utxos.get(sendtoaddr)
+        matching = [u for u in utxos.values() if u.address == sendtoaddr]
+        if matching:
+            got_utxo = matching[0]
 
         if got_utxo:
             inmempool = True
@@ -691,7 +696,7 @@ class DashboardScene(Scene):
         self.loop_count = 0
         self.cursorposx = 0
         self.flash_msg = ""
-        self.selected_addrs = set()
+        self.selected_utxos = set()
 
         # Y cursor positions within each window.
         self.wincursoridx = {
@@ -884,12 +889,12 @@ class DashboardScene(Scene):
 
                 if k in (ENTER_KEYS + [ord(" ")]):
                     # Enter pressed; toggle this address for spending
-                    self.selected_addrs ^= {u.address}
+                    self.selected_utxos ^= {u.id}
                 elif k == ord("L"):
                     enter_label = True
 
             addr_str = u.address
-            if u.address in self.selected_addrs:
+            if u.id in self.selected_utxos:
                 attrslist.append(colr(4))
                 addr_str = f"✔ {addr_str}"
 
@@ -1031,11 +1036,14 @@ def to_clipboard(s: str) -> bool:
             logger.info("xclip not found, cannot copy to clipboard")
             return False
         cmd = "xclip -selection clipboard"
+        sh(f"printf '{s}' | {cmd}")
     elif plat == "Darwin":
         cmd = "pbcopy"
+        sh(f"printf '{s}' | {cmd}")
+    elif plat == "Windows":
+        cmd = "clip"
+        sh(f"echo {s} | {cmd}")
 
-    # TODO windows support
-    sh(f"printf '{s}' | {cmd}")
     return True
 
 
